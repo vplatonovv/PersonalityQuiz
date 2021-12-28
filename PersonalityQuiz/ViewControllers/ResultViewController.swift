@@ -11,33 +11,36 @@ class ResultViewController: UIViewController {
     
     @IBOutlet var typeLabel: UILabel!
     @IBOutlet var descriptionLabel: UILabel!
-    
-    private var currentType: Animal {
-        let cat = answers.filter { $0.animal == .cat }.count
-        let dog = answers.filter { $0.animal == .dog }.count
-        let rabbit = answers.filter { $0.animal == .rabbit }.count
-        let turtle = answers.filter { $0.animal == .turtle }.count
-        
-        var currentType = Animal.cat
-        
-        if cat > dog && cat > rabbit && cat > turtle {
-            currentType = Animal.cat
-        } else if dog > cat && dog > rabbit && dog > turtle {
-            currentType = Animal.dog
-        } else if rabbit > cat && rabbit > dog && rabbit > turtle {
-            currentType = Animal.rabbit
-        } else if turtle > cat && turtle > dog && turtle > rabbit {
-            currentType = Animal.turtle
-        }
-        return currentType
-    }
-    
+   
     var answers: [Answer]!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        typeLabel.text = "Вы - \(currentType.rawValue)"
-        descriptionLabel.text = "\(currentType.definition)"
-        navigationItem.setHidesBackButton(true, animated: true)
+        navigationItem.hidesBackButton = true
+        updateResult()
+    }
+    
+    private func updateResult() {
+        
+        var frequencyOfAnimals: [Animal: Int] = [:]
+        let animals = answers.map { $0.animal }
+        
+        for animal in animals {
+            if let animalTypeCount = frequencyOfAnimals[animal] {
+                frequencyOfAnimals.updateValue(animalTypeCount + 1, forKey: animal)
+            } else {
+                frequencyOfAnimals[animal] = 1
+            }
+        }
+        
+        let sortedFrequencyOfAnimals = frequencyOfAnimals.sorted { $0.value > $1.value }
+        guard let mostFrequencyAnimal = sortedFrequencyOfAnimals.first?.key else { return }
+        
+        updateUI(with: mostFrequencyAnimal)
+    }
+    
+    private func updateUI(with animal: Animal) {
+        typeLabel.text = "Вы - \(animal.rawValue)"
+        descriptionLabel.text = animal.definition
     }
 }
